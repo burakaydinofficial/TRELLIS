@@ -38,11 +38,11 @@
 
 ### Prerequisites
 - **System**: The code is currently tested only on **Linux**.  For windows setup, you may refer to [#3](https://github.com/microsoft/TRELLIS/issues/3) (not fully tested).
-- **Hardware**: An NVIDIA GPU with at least 16GB of memory is necessary. The code has been verified on NVIDIA A100 and A6000 GPUs.  
-- **Software**:   
-  - The [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive) is needed to compile certain submodules. The code has been tested with CUDA versions 11.8 and 12.2.  
-  - [Conda](https://docs.anaconda.com/miniconda/install/#quick-command-line-install) is recommended for managing dependencies.  
-  - Python version 3.8 or higher is required. 
+- **Hardware**: An NVIDIA GPU with at least 16GB of memory is necessary. The code has been verified on NVIDIA A100 and A6000 GPUs.
+- **Software**:
+  - The [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit-archive) is needed to compile certain submodules. The code has been tested with CUDA versions 11.8, 12.1, and 12.2.
+  - [Conda](https://docs.anaconda.com/miniconda/install/#quick-command-line-install) is recommended for managing dependencies.
+  - Python version 3.8 or higher is required (default setup uses Python 3.10). 
 
 ### Installation Steps
 1. Clone the repo:
@@ -52,18 +52,30 @@
     ```
 
 2. Install the dependencies:
-    
-    **Before running the following command there are somethings to note:**
-    - By adding `--new-env`, a new conda environment named `trellis` will be created. If you want to use an existing conda environment, please remove this flag.
-    - By default the `trellis` environment will use pytorch 2.4.0 with CUDA 11.8. If you want to use a different version of CUDA (e.g., if you have CUDA Toolkit 12.2 installed and do not want to install another 11.8 version for submodule compilation), you can remove the `--new-env` flag and manually install the required dependencies. Refer to [PyTorch](https://pytorch.org/get-started/previous-versions/) for the installation command.
-    - If you have multiple CUDA Toolkit versions installed, `PATH` should be set to the correct version before running the command. For example, if you have CUDA Toolkit 11.8 and 12.2 installed, you should run `export PATH=/usr/local/cuda-11.8/bin:$PATH` before running the command.
-    - By default, the code uses the `flash-attn` backend for attention. For GPUs do not support `flash-attn` (e.g., NVIDIA V100), you can remove the `--flash-attn` flag to install `xformers` only and set the `ATTN_BACKEND` environment variable to `xformers` before running the code. See the [Minimal Example](#minimal-example) for more details.
-    - The installation may take a while due to the large number of dependencies. Please be patient. If you encounter any issues, you can try to install the dependencies one by one, specifying one flag at a time.
-    - If you encounter any issues during the installation, feel free to open an issue or contact us.
-    
-    Create a new conda environment named `trellis` and install the dependencies:
+
+    **Recommended Installation:**
     ```sh
     . ./setup.sh --new-env --basic --xformers --flash-attn --diffoctreerast --spconv --mipgaussian --kaolin --nvdiffrast
+    ```
+
+    The setup script will automatically detect your CUDA version and configure PyTorch accordingly. It supports CUDA 11.8, 12.1, and 12.2.
+
+    **For specific CUDA version (optional):**
+    ```sh
+    export CUDA_SETUP_VERSION="12.1"  # or "11.8", "12.2", "12.4"
+    . ./setup.sh --new-env --basic --xformers --flash-attn --diffoctreerast --spconv --mipgaussian --kaolin --nvdiffrast
+    ```
+
+    **Important Notes:**
+    - By adding `--new-env`, a new conda environment named `trellis` will be created. Remove this flag to use an existing environment.
+    - If you have multiple CUDA Toolkit versions installed, ensure the correct one is in your `PATH`. For example: `export PATH=/usr/local/cuda-12.1/bin:$PATH`
+    - For GPUs that don't support `flash-attn` (e.g., NVIDIA V100), remove the `--flash-attn` flag and use `export ATTN_BACKEND=xformers` before running the code.
+    - The installation may take a while due to compilation of extensions. Please be patient.
+    - If you encounter issues, try installing dependencies one by one, specifying one flag at a time.
+
+    **Verify installation:** After setup, run:
+    ```sh
+    python -c "import torch; print(f'PyTorch: {torch.__version__}, CUDA: {torch.version.cuda if torch.cuda.is_available() else \"Not available\"}')"
     ```
     The detailed usage of `setup.sh` can be found by running `. ./setup.sh --help`.
     ```sh

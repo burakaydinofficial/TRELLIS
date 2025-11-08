@@ -70,7 +70,26 @@ fi
 if [ "$NEW_ENV" = true ] ; then
     conda create -n trellis python=3.10
     conda activate trellis
-    conda install pytorch==2.4.0 torchvision==0.19.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+
+    # Auto-detect CUDA version if CUDA_SETUP_VERSION not set
+    if [ -z "$CUDA_SETUP_VERSION" ] && command -v nvcc &> /dev/null; then
+        CUDA_SETUP_VERSION=$(nvcc --version | grep "release" | sed -n 's/.*release \([0-9]\+\.[0-9]\+\).*/\1/p')
+        echo "[SETUP] Detected CUDA version: $CUDA_SETUP_VERSION"
+    fi
+
+    # Install PyTorch with appropriate CUDA version
+    case ${CUDA_SETUP_VERSION:-11.8} in
+        11.8)
+            conda install pytorch==2.4.0 torchvision==0.19.0 pytorch-cuda=11.8 -c pytorch -c nvidia ;;
+        12.1|12.2)
+            echo "[SETUP] Using CUDA 12.1 packages (compatible with CUDA 12.2)"
+            conda install pytorch==2.4.0 torchvision==0.19.0 pytorch-cuda=12.1 -c pytorch -c nvidia ;;
+        12.4)
+            conda install pytorch==2.4.0 torchvision==0.19.0 pytorch-cuda=12.4 -c pytorch -c nvidia ;;
+        *)
+            echo "[SETUP] Warning: CUDA $CUDA_SETUP_VERSION not explicitly supported, defaulting to 11.8"
+            conda install pytorch==2.4.0 torchvision==0.19.0 pytorch-cuda=11.8 -c pytorch -c nvidia ;;
+    esac
 fi
 
 # Get system information
@@ -131,12 +150,13 @@ if [ "$XFORMERS" = true ] ; then
                 2.2.1) pip install xformers==0.0.25 --index-url https://download.pytorch.org/whl/cu118 ;;
                 2.2.2) pip install xformers==0.0.25.post1 --index-url https://download.pytorch.org/whl/cu118 ;;
                 2.3.0) pip install xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu118 ;;
-                2.4.0) pip install xformers==0.0.27.post2 --index-url https://download.pytorch.org/whl/cu118 ;;
+                2.4.0) pip install xformers==0.0.28 --index-url https://download.pytorch.org/whl/cu118 ;;  # Note: 0.0.27.post2 is deprecated
                 2.4.1) pip install xformers==0.0.28 --index-url https://download.pytorch.org/whl/cu118 ;;
                 2.5.0) pip install xformers==0.0.28.post2 --index-url https://download.pytorch.org/whl/cu118 ;;
                 *) echo "[XFORMERS] Unsupported PyTorch & CUDA version: $PYTORCH_VERSION & $CUDA_VERSION" ;;
             esac
-        elif [ "$CUDA_VERSION" = "12.1" ] ; then
+        elif [ "$CUDA_VERSION" = "12.1" ] || [ "$CUDA_VERSION" = "12.2" ] ; then
+            # CUDA 12.2 uses 12.1 packages (minor version compatibility)
             case $PYTORCH_VERSION in
                 2.1.0) pip install xformers==0.0.22.post7 --index-url https://download.pytorch.org/whl/cu121 ;;
                 2.1.1) pip install xformers==0.0.23 --index-url https://download.pytorch.org/whl/cu121 ;;
@@ -145,7 +165,7 @@ if [ "$XFORMERS" = true ] ; then
                 2.2.1) pip install xformers==0.0.25 --index-url https://download.pytorch.org/whl/cu121 ;;
                 2.2.2) pip install xformers==0.0.25.post1 --index-url https://download.pytorch.org/whl/cu121 ;;
                 2.3.0) pip install xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu121 ;;
-                2.4.0) pip install xformers==0.0.27.post2 --index-url https://download.pytorch.org/whl/cu121 ;;
+                2.4.0) pip install xformers==0.0.28 --index-url https://download.pytorch.org/whl/cu121 ;;  # Note: 0.0.27.post2 is deprecated
                 2.4.1) pip install xformers==0.0.28 --index-url https://download.pytorch.org/whl/cu121 ;;
                 2.5.0) pip install xformers==0.0.28.post2 --index-url https://download.pytorch.org/whl/cu121 ;;
                 *) echo "[XFORMERS] Unsupported PyTorch & CUDA version: $PYTORCH_VERSION & $CUDA_VERSION" ;;
