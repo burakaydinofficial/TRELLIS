@@ -172,8 +172,11 @@ if [ "$XFORMERS" = true ] ; then
             esac
         elif [ "$CUDA_VERSION" = "12.4" ] ; then
             case $PYTORCH_VERSION in
+                2.4.0) pip install xformers==0.0.28 --index-url https://download.pytorch.org/whl/cu121 ;;  # Use cu121 build for compatibility
+                2.4.1) pip install xformers==0.0.28 --index-url https://download.pytorch.org/whl/cu121 ;;
                 2.5.0) pip install xformers==0.0.28.post2 --index-url https://download.pytorch.org/whl/cu124 ;;
-                *) echo "[XFORMERS] Unsupported PyTorch & CUDA version: $PYTORCH_VERSION & $CUDA_VERSION" ;;
+                *) echo "[XFORMERS] Warning: Untested PyTorch version $PYTORCH_VERSION with CUDA 12.4, trying default"
+                   pip install xformers --index-url https://download.pytorch.org/whl/cu121 ;;
             esac
         else
             echo "[XFORMERS] Unsupported CUDA version: $CUDA_MAJOR_VERSION"
