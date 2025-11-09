@@ -279,5 +279,6 @@ if [ "$SPCONV" = true ] ; then
 fi
 
 if [ "$DEMO" = true ] ; then
+    pip install pydantic==2.10.6 "huggingface_hub>=0.26.0,<1.0"
     pip install gradio==4.44.1 gradio_litmodel3d==0.0.1
 fi
