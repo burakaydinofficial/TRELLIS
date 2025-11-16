@@ -92,6 +92,11 @@ if [ "$NEW_ENV" = true ] ; then
     esac
 fi
 
+#Ensure numpy first. There is another basic block down there
+if [ "$BASIC" = true ] ; then
+    pip install numpy==1.26.4
+fi
+
 # Get system information
 WORKDIR=$(pwd)
 PYTORCH_VERSION=$(python -c "import torch; print(torch.__version__)")
@@ -126,7 +131,9 @@ case $PLATFORM in
 esac
 
 if [ "$BASIC" = true ] ; then
-    pip install pillow imageio imageio-ffmpeg tqdm easydict opencv-python-headless scipy ninja rembg onnxruntime trimesh open3d xatlas pyvista pymeshfix igraph transformers
+    pip install pillow==10.4.0 imageio imageio-ffmpeg tqdm easydict numpy==1.26.4 \
+	opencv-python-headless scipy ninja rembg onnxruntime trimesh open3d xatlas \
+	pyvista pymeshfix igraph transformers markupsafe==2.1.5
     pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
 fi
 
@@ -228,7 +235,7 @@ fi
 if [ "$NVDIFFRAST" = true ] ; then
     if [ "$PLATFORM" = "cuda" ] ; then
         mkdir -p /tmp/extensions
-        git clone https://github.com/NVlabs/nvdiffrast.git /tmp/extensions/nvdiffrast
+        git clone https://github.com/burakaydinofficial/nvdiffrast.git --depth 1 --branch rel2 /tmp/extensions/nvdiffrast
         pip install /tmp/extensions/nvdiffrast
     else
         echo "[NVDIFFRAST] Unsupported platform: $PLATFORM"
